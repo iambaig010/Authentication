@@ -1,47 +1,34 @@
 const express = require("express");
+const jwt = require("jsonwebtoken");
 
+const JWT_SECRET = "somerandomgiberish";
 const app = express();
 app.use(express.json());
 
 const users = [];
 
-function generateToken(){
-    let options = ['a','b','c','d','e','f','g','h','i','j',
-        'k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z',
-        '1','2','3','4','5','6','7','8','9','0','A','B','C','D','E','F',
-        'G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V',
-        'W','X','Y','Z'];
+app.post('/signup', function (req, res) {
+    const { username, password } = req.body;
 
-        let token ='';
-        for(let i=0; i<32; i++){
-            token += options[Math.floor(Math.random()*options.length)];
-        }
-        return token;
-}
-
-app.post('/signup', function(req,res){
-    const username = req.body.username;
-    const password = req.body.password;
-
-    if(users.find(u => u.username === username)){
-        return res.json({
-            message: "username already exists"
-        })
+    if (!username || !password) {
+        return res.status(400).json({ message: "Username and password are required" });
     }
 
-    users.push({
-        username: username,
-        password: password,
-        token: null
-    })
+    if (users.find(u => u.username === username)) {
+        return res.status(400).json({ message: "Username already exists" });
+    }
 
-    res.json({
-        message: "youre signed up"
-    })
-})
+    users.push({ username, password, token: null });
+
+    return res.status(201).json({ message: "You're signed up" });
+});
 
 app.post('/signin', function (req, res) {
     const { username, password } = req.body;
+
+    if (!username || !password) {
+        return res.status(400).json({ message: "Username and password are required" });
+    }
 
     // Find user
     const foundUser = users.find(u => u.username === username && u.password === password);
@@ -51,13 +38,10 @@ app.post('/signin', function (req, res) {
     }
 
     // Generate token
-    const token = generateToken();
-    foundUser.token = token; // Assign token to the user
+    const token = jwt.sign({ username }, JWT_SECRET, { expiresIn: "1h" });
+    foundUser.token = token;
 
-    res.json({ message: "Signed in successfully", token });
+    return res.status(200).json({ message: "Signed in successfully", token });
 });
 
-
-
-
-app.listen(3000);
+app.listen(3000, () => console.log("Server running on port 3000"));
