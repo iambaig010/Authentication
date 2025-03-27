@@ -1,4 +1,6 @@
-Basic Authentication & JWT Token Explained
+# Basic Authentication & JWT Token Explained
+
+
 Imagine you go to a bank to withdraw money. The bank needs to verify your identity before giving you access to your account. This verification process is similar to authentication in software systems.
 
 1. Basic Authentication
